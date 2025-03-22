@@ -1,3 +1,5 @@
 package model
 
-type User struct{}
+type User struct {
+	ID uint64 `json:"id"`
+}
