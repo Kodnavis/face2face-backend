@@ -57,7 +57,7 @@ func (u *User) Create(w http.ResponseWriter, r *http.Request) {
 
 	err := u.Repo.Insert(r.Context(), user)
 	if err != nil {
-		log.Printf("User create error: %v", err)
+		log.Printf("user create error: %v", err)
 
 		if isDuplicateKeyError(err) {
 			http.Error(w, "Login already exists", http.StatusConflict)
@@ -83,13 +83,8 @@ func (u *User) Create(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	if err := json.NewEncoder(w).Encode(response); err != nil {
-		log.Printf("Failed to encode response: %v", err)
+		log.Printf("failed to encode response: %v", err)
 	}
-}
-
-func isDuplicateKeyError(err error) bool {
-	var pgErr *pq.Error
-	return errors.As(err, &pgErr) && pgErr.Code == "23505"
 }
 
 func (u *User) List(w http.ResponseWriter, r *http.Request) {
@@ -106,4 +101,9 @@ func (u *User) UpdateById(w http.ResponseWriter, r *http.Request) {
 
 func (u *User) DeleteById(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Delete a user by ID")
+}
+
+func isDuplicateKeyError(err error) bool {
+	var pgErr *pq.Error
+	return errors.As(err, &pgErr) && pgErr.Code == "23505"
 }

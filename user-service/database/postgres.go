@@ -12,7 +12,7 @@ import (
 func Connect() *sql.DB {
 	err := godotenv.Load(".env")
 	if err != nil {
-		log.Fatalf("Ошибка загрузки .env файла: %v", err)
+		log.Fatalf("error loading .env file: %v", err)
 	}
 
 	dbUser := os.Getenv("DB_USER")
@@ -26,14 +26,14 @@ func Connect() *sql.DB {
 
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
-		log.Fatalf("Ошибка подключения к базе данных: %v", err)
+		log.Fatalf("database connection error: %v", err)
 	}
 
 	if err := db.Ping(); err != nil {
-		log.Fatalf("Ошибка проверки подключения: %v", err)
+		log.Fatalf("database connection check error: %v", err)
 	}
 
-	log.Println("Успешное подключение к базе данных")
+	log.Println("successful connection to the database")
 
 	return db
 }
