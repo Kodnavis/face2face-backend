@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/Kodnavis/face2face-backend/user-service/database"
 	_ "github.com/lib/pq"
@@ -19,9 +20,10 @@ func New() *App {
 	db := database.Connect()
 
 	app := &App{
-		router: loadRoutes(),
-		pdb:    db,
+		pdb: db,
 	}
+
+	app.loadRoutes()
 
 	return app
 }
@@ -32,12 +34,32 @@ func (a *App) Start(ctx context.Context) error {
 		Handler: a.router,
 	}
 
+	defer func() {
+		if err := a.pdb.Close(); err != nil {
+			fmt.Println("failed to close PostgreSQL connection:", err)
+		}
+	}()
+
 	fmt.Println("Starting server on :8080")
 
-	err := server.ListenAndServe()
-	if err != nil {
-		return fmt.Errorf("failed to start server: %w", err)
-	}
+	ch := make(chan error, 1)
 
-	return nil
+	go func() {
+		err := server.ListenAndServe()
+		if err != nil {
+			ch <- fmt.Errorf("failed to start server: %w", err)
+		}
+
+		close(ch)
+	}()
+
+	select {
+	case err := <-ch:
+		return err
+	case <-ctx.Done():
+		timeout, cancel := context.WithTimeout(context.Background(), time.Second*10)
+		defer cancel()
+
+		return server.Shutdown(timeout)
+	}
 }

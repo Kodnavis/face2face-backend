@@ -33,12 +33,6 @@ func Connect() *sql.DB {
 		log.Fatalf("Ошибка проверки подключения: %v", err)
 	}
 
-	defer func() {
-		if err := db.Close(); err != nil {
-			fmt.Println("failed to close PostgreSQL connection:", err)
-		}
-	}()
-
 	log.Println("Успешное подключение к базе данных")
 
 	return db

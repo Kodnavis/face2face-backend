@@ -4,11 +4,12 @@ import (
 	"net/http"
 
 	"github.com/Kodnavis/face2face-backend/user-service/handler"
+	"github.com/Kodnavis/face2face-backend/user-service/repository"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 )
 
-func loadRoutes() *chi.Mux {
+func (a *App) loadRoutes() {
 	router := chi.NewRouter()
 
 	router.Use(middleware.Logger)
@@ -18,13 +19,17 @@ func loadRoutes() *chi.Mux {
 
 	})
 
-	router.Route("/users", loadUserRoutes)
+	router.Route("/users", a.loadUserRoutes)
 
-	return router
+	a.router = router
 }
 
-func loadUserRoutes(router chi.Router) {
-	userHandler := &handler.User{}
+func (a *App) loadUserRoutes(router chi.Router) {
+	userHandler := &handler.User{
+		Repo: &repository.UserRepo{
+			Db: a.pdb,
+		},
+	}
 
 	router.Post("/", userHandler.Create)
 	router.Get("/", userHandler.List)

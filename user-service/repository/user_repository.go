@@ -8,6 +8,7 @@ import (
 	"fmt"
 
 	"github.com/Kodnavis/face2face-backend/user-service/model"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type UserRepo struct {
@@ -15,12 +16,18 @@ type UserRepo struct {
 }
 
 func (u *UserRepo) Insert(ctx context.Context, user model.User) error {
-	data, err := json.Marshal(user)
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
-		return fmt.Errorf("failed to encode order: %w", err)
+		return fmt.Errorf("password hashing failed: %w", err)
 	}
 
-	_, err = u.Db.ExecContext(ctx, "INSERT INTO users (data) VALUE ($1)", data)
+	user.Password = string(hashedPassword)
+
+	_, err = u.Db.ExecContext(ctx, `
+        INSERT INTO users (id, firstname, lastname, login, password) 
+        VALUES ($1, $2, $3, $4, $5)`,
+		user.ID, user.Firstname, user.Lastname, user.Login, user.Password)
+
 	if err != nil {
 		return fmt.Errorf("failed to insert user: %w", err)
 	}
