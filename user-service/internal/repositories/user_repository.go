@@ -35,20 +35,24 @@ type FindAllResult struct {
 	Cursor uint64
 }
 
-func (u *UserRepository) FindAll(ctx context.Context, page FindAllPage) (FindAllResult, error) {
+func (u *UserRepository) FindAll() (FindAllResult, error) {
+	// TODO
 	return FindAllResult{}, nil
 }
 
 var ErrNotExist = errors.New("user does not exist")
 
 func (u *UserRepository) Find(ctx context.Context, id uint64) (models.User, error) {
+	// TODO
 	return models.User{}, nil
 }
 
 func (u *UserRepository) Update(ctx context.Context, user models.User) error {
+	// TODO
 	return nil
 }
 
 func (u *UserRepository) Delete(ctx context.Context, id uint64) error {
+	// TODO
 	return nil
 }
