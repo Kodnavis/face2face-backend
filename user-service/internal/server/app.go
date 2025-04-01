@@ -1,9 +1,9 @@
-package application
+package server
 
 import (
 	"log"
 
-	"github.com/Kodnavis/face2face-backend/user-service/database"
+	"github.com/Kodnavis/face2face-backend/user-service/internal/database"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"gorm.io/gorm"
@@ -36,8 +36,6 @@ func (a *App) Start() error {
 	if err != nil {
 		return err
 	}
-
-	log.Println("listen and serve on :8080")
 
 	return nil
 }

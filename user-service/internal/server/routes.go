@@ -1,8 +1,8 @@
-package application
+package server
 
 import (
-	"github.com/Kodnavis/face2face-backend/user-service/handler"
-	"github.com/Kodnavis/face2face-backend/user-service/repository"
+	"github.com/Kodnavis/face2face-backend/user-service/internal/handlers"
+	"github.com/Kodnavis/face2face-backend/user-service/internal/repositories"
 	"github.com/gin-gonic/gin"
 )
 
@@ -16,9 +16,9 @@ func (a *App) loadRoutes() {
 }
 
 func (a *App) loadUserRoutes(router *gin.RouterGroup) {
-	userHandler := &handler.User{
-		Repo: &repository.UserRepo{
-			Db: a.pdb,
+	userHandler := &handlers.User{
+		Repo: &repositories.UserRepository{
+			DB: a.pdb,
 		},
 	}
 

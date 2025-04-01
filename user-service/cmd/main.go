@@ -3,11 +3,11 @@ package main
 import (
 	"log"
 
-	"github.com/Kodnavis/face2face-backend/user-service/application"
+	"github.com/Kodnavis/face2face-backend/user-service/internal/server"
 )
 
 func main() {
-	app := application.New()
+	app := server.New()
 
 	err := app.Start()
 	if err != nil {
