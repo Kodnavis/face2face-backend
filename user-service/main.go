@@ -1,22 +1,20 @@
 package main
 
 import (
-	"context"
-	"fmt"
-	"os"
-	"os/signal"
+	"log"
 
 	"github.com/Kodnavis/face2face-backend/user-service/application"
 )
 
+func init() {
+	application.LoadEnvVariables()
+}
+
 func main() {
 	app := application.New()
 
-	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
-	defer cancel()
-
-	err := app.Start(ctx)
+	err := app.Start()
 	if err != nil {
-		fmt.Println("failed to start app:", err)
+		log.Fatalf("failed to start app: %v", err)
 	}
 }

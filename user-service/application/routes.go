@@ -1,39 +1,30 @@
 package application
 
 import (
-	"net/http"
-
 	"github.com/Kodnavis/face2face-backend/user-service/handler"
 	"github.com/Kodnavis/face2face-backend/user-service/repository"
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
+	"github.com/gin-gonic/gin"
 )
 
 func (a *App) loadRoutes() {
-	router := chi.NewRouter()
+	router := gin.Default()
 
-	router.Use(middleware.Logger)
-
-	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-
-	})
-
-	router.Route("/users", a.loadUserRoutes)
+	userGroup := router.Group("/users")
+	a.loadUserRoutes(userGroup)
 
 	a.router = router
 }
 
-func (a *App) loadUserRoutes(router chi.Router) {
+func (a *App) loadUserRoutes(router *gin.RouterGroup) {
 	userHandler := &handler.User{
 		Repo: &repository.UserRepo{
 			Db: a.pdb,
 		},
 	}
 
-	router.Post("/", userHandler.Create)
-	router.Get("/", userHandler.List)
-	router.Get("/{id}", userHandler.GetByID)
-	router.Put("/{id}", userHandler.UpdateById)
-	router.Delete("/{id}", userHandler.DeleteById)
+	router.POST("/", userHandler.Create)
+	router.GET("/", userHandler.List)
+	router.GET("/:id", userHandler.GetByID)
+	router.PUT("/:id", userHandler.UpdateById)
+	router.DELETE("/:id", userHandler.DeleteById)
 }
