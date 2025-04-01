@@ -6,10 +6,6 @@ import (
 	"github.com/Kodnavis/face2face-backend/user-service/application"
 )
 
-func init() {
-	application.LoadEnvVariables()
-}
-
 func main() {
 	app := application.New()
 

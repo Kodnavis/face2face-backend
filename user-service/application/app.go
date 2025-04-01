@@ -5,6 +5,7 @@ import (
 
 	"github.com/Kodnavis/face2face-backend/user-service/database"
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 	"gorm.io/gorm"
 )
 
@@ -14,6 +15,11 @@ type App struct {
 }
 
 func New() *App {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
 	db := database.Connect()
 
 	app := &App{
