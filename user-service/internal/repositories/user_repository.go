@@ -25,19 +25,20 @@ func (u *UserRepository) Insert(user *models.User) error {
 	return u.DB.Create(user).Error
 }
 
-type FindAllPage struct {
-	Size   uint64
-	Offset uint64
+type FindAllQueryParams struct {
+	Size   int `form:"size"`
+	Offset int `form:"offset"`
 }
 
-type FindAllResult struct {
-	Users  []models.User
-	Cursor uint64
-}
+func (u *UserRepository) FindAll(params FindAllQueryParams) ([]models.User, error) {
+	var users []models.User
 
-func (u *UserRepository) FindAll() (FindAllResult, error) {
-	// TODO
-	return FindAllResult{}, nil
+	result := u.DB.Limit(params.Size).Offset(params.Offset).Find(&users)
+	if result.Error != nil {
+		return []models.User{}, fmt.Errorf("listing users failed: %w", result.Error)
+	}
+
+	return users, nil
 }
 
 var ErrNotExist = errors.New("user does not exist")
