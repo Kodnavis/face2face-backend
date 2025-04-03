@@ -46,7 +46,7 @@ var ErrNotExist = errors.New("user does not exist")
 func (u *UserRepository) Find(login string) (models.User, error) {
 	var user models.User
 
-	result := u.DB.First(&user, "login = ?", login)
+	result := u.DB.Where("login = ?", login).First(&user)
 	if result.Error != nil {
 		return user, ErrNotExist
 	}
@@ -59,7 +59,11 @@ func (u *UserRepository) Update(ctx context.Context, user models.User) error {
 	return nil
 }
 
-func (u *UserRepository) Delete(ctx context.Context, id uint64) error {
-	// TODO
-	return nil
+func (u *UserRepository) Delete(login string) error {
+	user, err := u.Find(login)
+	if err != nil {
+		return err
+	}
+
+	return u.DB.Delete(&user).Error
 }

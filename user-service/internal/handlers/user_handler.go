@@ -50,7 +50,7 @@ func (u *User) Create(c *gin.Context) {
 		log.Println(err)
 
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Failed to create user",
+			"error": "failed to create user",
 		})
 		return
 	}
@@ -71,7 +71,7 @@ func (u *User) List(c *gin.Context) {
 
 	if err := c.ShouldBindQuery(&query_params); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Invalid query parameters",
+			"error": "invalid query parameters",
 		})
 		return
 	}
@@ -92,7 +92,7 @@ func (u *User) List(c *gin.Context) {
 		log.Println(err)
 
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Failed to list users",
+			"error": "failed to list users",
 		})
 		return
 	}
@@ -132,7 +132,7 @@ func (u *User) GetByID(c *gin.Context) {
 		log.Println(err)
 
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Internal server error",
+			"error": "internal server error",
 		})
 		return
 	}
@@ -156,8 +156,24 @@ func (u *User) UpdateById(c *gin.Context) {
 }
 
 func (u *User) DeleteById(c *gin.Context) {
-	// TODO
-	c.JSON(http.StatusOK, gin.H{
-		"message": "Delete a user by ID",
-	})
+	login := c.Param("login")
+	err := u.Repo.Delete(login)
+
+	if err != nil {
+		if errors.Is(err, repositories.ErrNotExist) {
+			c.JSON(http.StatusNotFound, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+
+		log.Println(err)
+
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Internal server error",
+		})
+		return
+	}
+
+	c.Status(http.StatusOK)
 }
