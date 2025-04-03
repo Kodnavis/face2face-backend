@@ -117,7 +117,7 @@ func (u *User) List(c *gin.Context) {
 	})
 }
 
-func (u *User) GetByID(c *gin.Context) {
+func (u *User) Get(c *gin.Context) {
 	login := c.Param("login")
 	user, err := u.Repo.FindOne(login)
 
@@ -148,14 +148,14 @@ func (u *User) GetByID(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 }
 
-func (u *User) UpdateById(c *gin.Context) {
+func (u *User) Update(c *gin.Context) {
 	// TODO
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Update a user by ID",
 	})
 }
 
-func (u *User) DeleteById(c *gin.Context) {
+func (u *User) Delete(c *gin.Context) {
 	login := c.Param("login")
 	err := u.Repo.Delete(login)
 
