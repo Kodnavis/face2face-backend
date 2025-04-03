@@ -43,7 +43,7 @@ func (u *UserRepository) FindAll(params FindAllQueryParams) ([]models.User, erro
 
 var ErrNotExist = errors.New("user does not exist")
 
-func (u *UserRepository) Find(login string) (models.User, error) {
+func (u *UserRepository) FindOne(login string) (models.User, error) {
 	var user models.User
 
 	result := u.DB.Where("login = ?", login).First(&user)
@@ -60,7 +60,7 @@ func (u *UserRepository) Update(ctx context.Context, user models.User) error {
 }
 
 func (u *UserRepository) Delete(login string) error {
-	user, err := u.Find(login)
+	user, err := u.FindOne(login)
 	if err != nil {
 		return err
 	}

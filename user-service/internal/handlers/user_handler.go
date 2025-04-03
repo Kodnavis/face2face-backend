@@ -119,7 +119,7 @@ func (u *User) List(c *gin.Context) {
 
 func (u *User) GetByID(c *gin.Context) {
 	login := c.Param("login")
-	user, err := u.Repo.Find(login)
+	user, err := u.Repo.FindOne(login)
 
 	if err != nil {
 		if errors.Is(err, repositories.ErrNotExist) {
