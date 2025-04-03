@@ -1,7 +1,6 @@
 package repositories
 
 import (
-	"context"
 	"errors"
 	"fmt"
 
@@ -25,34 +24,57 @@ func (u *UserRepository) Insert(user *models.User) error {
 	return u.DB.Create(user).Error
 }
 
-type FindAllPage struct {
-	Size   uint64
-	Offset uint64
+type FindAllQueryParams struct {
+	Size   int `form:"size"`
+	Offset int `form:"offset"`
 }
 
-type FindAllResult struct {
-	Users  []models.User
-	Cursor uint64
-}
+func (u *UserRepository) FindAll(params FindAllQueryParams) ([]models.User, error) {
+	var users []models.User
 
-func (u *UserRepository) FindAll() (FindAllResult, error) {
-	// TODO
-	return FindAllResult{}, nil
+	result := u.DB.Limit(params.Size).Offset(params.Offset).Find(&users)
+	if result.Error != nil {
+		return []models.User{}, fmt.Errorf("listing users failed: %w", result.Error)
+	}
+
+	return users, nil
 }
 
 var ErrNotExist = errors.New("user does not exist")
 
-func (u *UserRepository) Find(ctx context.Context, id uint64) (models.User, error) {
-	// TODO
-	return models.User{}, nil
+func (u *UserRepository) FindOne(login string) (models.User, error) {
+	var user models.User
+
+	result := u.DB.Where("login = ?", login).First(&user)
+	if result.Error != nil {
+		return user, ErrNotExist
+	}
+
+	return user, nil
 }
 
-func (u *UserRepository) Update(ctx context.Context, user models.User) error {
-	// TODO
+func (u *UserRepository) Update(login string, user *models.User) error {
+	result := u.DB.Where("login = ?", login).Updates(user)
+	if result.Error != nil {
+		return result.Error
+	}
+
+	if result.RowsAffected == 0 {
+		return ErrNotExist
+	}
+
 	return nil
 }
 
-func (u *UserRepository) Delete(ctx context.Context, id uint64) error {
-	// TODO
+func (u *UserRepository) Delete(login string) error {
+	result := u.DB.Where("login = ?", login).Delete(&models.User{})
+	if result.Error != nil {
+		return result.Error
+	}
+
+	if result.RowsAffected == 0 {
+		return ErrNotExist
+	}
+
 	return nil
 }

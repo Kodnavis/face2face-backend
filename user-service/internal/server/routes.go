@@ -24,7 +24,7 @@ func (a *App) loadUserRoutes(router *gin.RouterGroup) {
 
 	router.POST("/", userHandler.Create)
 	router.GET("/", userHandler.List)
-	router.GET("/:id", userHandler.GetByID)
-	router.PUT("/:id", userHandler.UpdateById)
-	router.DELETE("/:id", userHandler.DeleteById)
+	router.GET("/:login", userHandler.Get)
+	router.PUT("/:login", userHandler.Update)
+	router.DELETE("/:login", userHandler.Delete)
 }
