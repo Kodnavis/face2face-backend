@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"errors"
 	"log"
 	"net/http"
 	"time"
@@ -117,10 +118,34 @@ func (u *User) List(c *gin.Context) {
 }
 
 func (u *User) GetByID(c *gin.Context) {
-	// TODO
-	c.JSON(http.StatusOK, gin.H{
-		"message": "Get a user by ID",
-	})
+	login := c.Param("login")
+	user, err := u.Repo.Find(login)
+
+	if err != nil {
+		if errors.Is(err, repositories.ErrNotExist) {
+			c.JSON(http.StatusNotFound, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+
+		log.Println(err)
+
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Internal server error",
+		})
+		return
+	}
+
+	response := UserResponse{
+		ID:        user.ID,
+		Firstname: user.Firstname,
+		Lastname:  user.Lastname,
+		Login:     user.Login,
+		CreatedAt: user.CreatedAt.Format(time.RFC3339),
+	}
+
+	c.JSON(http.StatusOK, response)
 }
 
 func (u *User) UpdateById(c *gin.Context) {

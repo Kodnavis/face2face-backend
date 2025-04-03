@@ -43,9 +43,15 @@ func (u *UserRepository) FindAll(params FindAllQueryParams) ([]models.User, erro
 
 var ErrNotExist = errors.New("user does not exist")
 
-func (u *UserRepository) Find(ctx context.Context, id uint64) (models.User, error) {
-	// TODO
-	return models.User{}, nil
+func (u *UserRepository) Find(login string) (models.User, error) {
+	var user models.User
+
+	result := u.DB.First(&user, "login = ?", login)
+	if result.Error != nil {
+		return user, ErrNotExist
+	}
+
+	return user, nil
 }
 
 func (u *UserRepository) Update(ctx context.Context, user models.User) error {
