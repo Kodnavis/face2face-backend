@@ -1,7 +1,6 @@
 package repositories
 
 import (
-	"context"
 	"errors"
 	"fmt"
 
@@ -54,16 +53,28 @@ func (u *UserRepository) FindOne(login string) (models.User, error) {
 	return user, nil
 }
 
-func (u *UserRepository) Update(ctx context.Context, user models.User) error {
-	// TODO
+func (u *UserRepository) Update(login string, user *models.User) error {
+	result := u.DB.Where("login = ?", login).Updates(user)
+	if result.Error != nil {
+		return result.Error
+	}
+
+	if result.RowsAffected == 0 {
+		return ErrNotExist
+	}
+
 	return nil
 }
 
 func (u *UserRepository) Delete(login string) error {
-	user, err := u.FindOne(login)
-	if err != nil {
-		return err
+	result := u.DB.Where("login = ?", login).Delete(&models.User{})
+	if result.Error != nil {
+		return result.Error
 	}
 
-	return u.DB.Delete(&user).Error
+	if result.RowsAffected == 0 {
+		return ErrNotExist
+	}
+
+	return nil
 }

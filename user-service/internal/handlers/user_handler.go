@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/Kodnavis/face2face-backend/user-service/internal/data/requests"
+	"github.com/Kodnavis/face2face-backend/user-service/internal/data/responses"
 	"github.com/Kodnavis/face2face-backend/user-service/internal/models"
 	"github.com/Kodnavis/face2face-backend/user-service/internal/repositories"
 	"github.com/gin-gonic/gin"
@@ -15,23 +17,8 @@ type User struct {
 	Repo *repositories.UserRepository
 }
 
-type UserRequest struct {
-	Firstname string `json:"firstname" binding:"required,min=2,max=50"`
-	Lastname  string `json:"lastname" binding:"required,min=2,max=50"`
-	Login     string `json:"login" binding:"required,min=2,max=50"`
-	Password  string `json:"password" binding:"required,min=8,max=72"`
-}
-
-type UserResponse struct {
-	ID        uint   `json:"id"`
-	Firstname string `json:"firstname"`
-	Lastname  string `json:"lastname"`
-	Login     string `json:"login"`
-	CreatedAt string `json:"created_at"`
-}
-
 func (u *User) Create(c *gin.Context) {
-	var request UserRequest
+	var request requests.CreateUserRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
@@ -55,7 +42,7 @@ func (u *User) Create(c *gin.Context) {
 		return
 	}
 
-	response := UserResponse{
+	response := responses.UserResponse{
 		ID:        user.ID,
 		Firstname: user.Firstname,
 		Lastname:  user.Lastname,
@@ -97,9 +84,9 @@ func (u *User) List(c *gin.Context) {
 		return
 	}
 
-	var response []UserResponse
+	var response []responses.UserResponse
 	for _, user := range users {
-		response = append(response, UserResponse{
+		response = append(response, responses.UserResponse{
 			ID:        user.ID,
 			Firstname: user.Firstname,
 			Lastname:  user.Lastname,
@@ -137,7 +124,7 @@ func (u *User) Get(c *gin.Context) {
 		return
 	}
 
-	response := UserResponse{
+	response := responses.UserResponse{
 		ID:        user.ID,
 		Firstname: user.Firstname,
 		Lastname:  user.Lastname,
@@ -149,10 +136,62 @@ func (u *User) Get(c *gin.Context) {
 }
 
 func (u *User) Update(c *gin.Context) {
-	// TODO
-	c.JSON(http.StatusOK, gin.H{
-		"message": "Update a user by ID",
-	})
+	login := c.Param("login")
+
+	existing_user, err := u.Repo.FindOne(login)
+	if err != nil {
+		if errors.Is(err, repositories.ErrNotExist) {
+			c.JSON(http.StatusNotFound, gin.H{
+				"error": "user not found",
+			})
+			return
+		}
+
+		log.Println(err)
+
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "failed to update user",
+		})
+		return
+	}
+
+	var request requests.UpdateUserRequest
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	existing_user.Firstname = request.Firstname
+	existing_user.Lastname = request.Lastname
+	existing_user.Login = request.Login
+
+	if err := u.Repo.Update(login, &existing_user); err != nil {
+		if errors.Is(err, repositories.ErrNotExist) {
+			c.JSON(http.StatusNotFound, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+
+		log.Println(err)
+
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "failed to update user",
+		})
+		return
+	}
+
+	response := responses.UserResponse{
+		ID:        existing_user.ID,
+		Firstname: existing_user.Firstname,
+		Lastname:  existing_user.Lastname,
+		Login:     existing_user.Login,
+		CreatedAt: existing_user.CreatedAt.Format(time.RFC3339),
+	}
+
+	c.JSON(http.StatusOK, response)
 }
 
 func (u *User) Delete(c *gin.Context) {
