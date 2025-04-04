@@ -27,4 +27,6 @@ func (a *App) loadUserRoutes(router *gin.RouterGroup) {
 	router.GET("/:login", userHandler.Get)
 	router.PUT("/:login", userHandler.Update)
 	router.DELETE("/:login", userHandler.Delete)
+
+	router.POST("/login", userHandler.Login)
 }
