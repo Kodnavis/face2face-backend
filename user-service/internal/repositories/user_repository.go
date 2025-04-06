@@ -54,16 +54,7 @@ func (u *UserRepository) FindOne(login string) (models.User, error) {
 }
 
 func (u *UserRepository) Update(login string, user *models.User) error {
-	result := u.DB.Where("login = ?", login).Updates(user)
-	if result.Error != nil {
-		return result.Error
-	}
-
-	if result.RowsAffected == 0 {
-		return ErrNotExist
-	}
-
-	return nil
+	return u.DB.Where("login = ?", login).Updates(user).Error
 }
 
 func (u *UserRepository) Delete(login string) error {

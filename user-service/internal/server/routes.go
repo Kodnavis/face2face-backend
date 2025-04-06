@@ -2,6 +2,7 @@ package server
 
 import (
 	"github.com/Kodnavis/face2face-backend/user-service/internal/handlers"
+	"github.com/Kodnavis/face2face-backend/user-service/internal/middlewares"
 	"github.com/Kodnavis/face2face-backend/user-service/internal/repositories"
 	"github.com/gin-gonic/gin"
 )
@@ -25,8 +26,8 @@ func (a *App) loadUserRoutes(router *gin.RouterGroup) {
 	router.POST("/", userHandler.Create)
 	router.GET("/", userHandler.List)
 	router.GET("/:login", userHandler.Get)
-	router.PUT("/:login", userHandler.Update)
-	router.DELETE("/:login", userHandler.Delete)
+	router.PUT("/:login", middlewares.JwtAuthMiddleware(), userHandler.Update)
+	router.DELETE("/:login", middlewares.JwtAuthMiddleware(), userHandler.Delete)
 
 	router.POST("/login", userHandler.Login)
 }

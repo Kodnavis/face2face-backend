@@ -136,9 +136,14 @@ func (u *User) Get(c *gin.Context) {
 }
 
 func (u *User) Update(c *gin.Context) {
-	login := c.Param("login")
+	param_login := c.Param("login")
+	user_login, _ := c.Get("user_login")
+	if param_login != user_login {
+		c.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
 
-	existing_user, err := u.Repo.FindOne(login)
+	existing_user, err := u.Repo.FindOne(param_login)
 	if err != nil {
 		if errors.Is(err, repositories.ErrNotExist) {
 			c.JSON(http.StatusNotFound, gin.H{
@@ -167,14 +172,7 @@ func (u *User) Update(c *gin.Context) {
 	existing_user.Lastname = request.Lastname
 	existing_user.Login = request.Login
 
-	if err := u.Repo.Update(login, &existing_user); err != nil {
-		if errors.Is(err, repositories.ErrNotExist) {
-			c.JSON(http.StatusNotFound, gin.H{
-				"error": err.Error(),
-			})
-			return
-		}
-
+	if err := u.Repo.Update(param_login, &existing_user); err != nil {
 		log.Println(err)
 
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -195,9 +193,14 @@ func (u *User) Update(c *gin.Context) {
 }
 
 func (u *User) Delete(c *gin.Context) {
-	login := c.Param("login")
-	err := u.Repo.Delete(login)
+	param_login := c.Param("login")
+	user_login, _ := c.Get("user_login")
+	if param_login != user_login {
+		c.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
 
+	err := u.Repo.Delete(param_login)
 	if err != nil {
 		if errors.Is(err, repositories.ErrNotExist) {
 			c.JSON(http.StatusNotFound, gin.H{

@@ -5,12 +5,12 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"time"
+	"strconv"
 
 	"github.com/Kodnavis/face2face-backend/user-service/internal/data/requests"
 	"github.com/Kodnavis/face2face-backend/user-service/internal/repositories"
+	"github.com/Kodnavis/face2face-backend/user-service/internal/utils"
 	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -49,13 +49,7 @@ func (u *User) Login(c *gin.Context) {
 		return
 	}
 
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"sub": user.ID,
-		"exp": time.Now().Add(time.Hour).Unix(),
-	})
-
-	token_string, err := token.SignedString([]byte(os.Getenv("JWT_SECRET")))
-
+	token, err := utils.GenerateToken(user.Login)
 	if err != nil {
 		log.Println(err)
 
@@ -65,8 +59,18 @@ func (u *User) Login(c *gin.Context) {
 		return
 	}
 
+	token_lifespan, err := strconv.Atoi(os.Getenv("TOKEN_LIFESPAN"))
+	if err != nil {
+		log.Panicln(err)
+
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "internal server error",
+		})
+		return
+	}
+
 	c.SetSameSite(http.SameSiteLaxMode)
-	c.SetCookie("Authorization", token_string, 3600, "", "", false, true)
+	c.SetCookie("Authorization", token, 3600*token_lifespan, "", "", false, true)
 
 	c.Status(http.StatusOK)
 }
