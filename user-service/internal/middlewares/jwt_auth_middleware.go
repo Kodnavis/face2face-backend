@@ -1,12 +1,11 @@
 package middlewares
 
 import (
+	"errors"
 	"net/http"
-	"os"
-	"time"
 
+	"github.com/Kodnavis/face2face-backend/user-service/internal/utils"
 	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt/v5"
 )
 
 func JwtAuthMiddleware() gin.HandlerFunc {
@@ -16,22 +15,16 @@ func JwtAuthMiddleware() gin.HandlerFunc {
 			c.AbortWithStatus(http.StatusUnauthorized)
 		}
 
-		token, err := jwt.Parse(token_string, func(token *jwt.Token) (interface{}, error) {
-			return []byte(os.Getenv("JWT_SECRET")), nil
-		}, jwt.WithValidMethods([]string{jwt.SigningMethodHS256.Alg()}))
+		user_id, err := utils.ExtractToken(token_string)
 		if err != nil {
-			c.AbortWithStatus(http.StatusUnauthorized)
-		}
-
-		if claims, ok := token.Claims.(jwt.MapClaims); ok {
-			if float64(time.Now().Unix()) > claims["exp"].(float64) {
+			if errors.Is(err, utils.ErrInvalidToken) {
 				c.AbortWithStatus(http.StatusUnauthorized)
 			}
 
-			c.Set("user_login", claims["sub"])
-			c.Next()
-		} else {
-			c.AbortWithStatus(http.StatusUnauthorized)
+			c.Status(http.StatusInternalServerError)
 		}
+
+		c.Set("user_login", user_id)
+		c.Next()
 	}
 }

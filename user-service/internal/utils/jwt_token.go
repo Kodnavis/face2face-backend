@@ -1,12 +1,15 @@
 package utils
 
 import (
+	"errors"
 	"os"
 	"strconv"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 )
+
+var ErrInvalidToken = errors.New("invalid token")
 
 func GenerateToken(login string) (string, error) {
 	token_lifespan, err := strconv.Atoi(os.Getenv("TOKEN_LIFESPAN"))
@@ -26,4 +29,24 @@ func GenerateToken(login string) (string, error) {
 	}
 
 	return token_string, nil
+}
+
+func ExtractToken(token_string string) (string, error) {
+	token, err := jwt.Parse(token_string, func(token *jwt.Token) (interface{}, error) {
+		return []byte(os.Getenv("JWT_SECRET")), nil
+	}, jwt.WithValidMethods([]string{jwt.SigningMethodHS256.Alg()}))
+	if err != nil {
+		return "", err
+	}
+
+	if claims, ok := token.Claims.(jwt.MapClaims); ok {
+		if float64(time.Now().Unix()) > claims["exp"].(float64) {
+			return "", ErrInvalidToken
+		}
+
+		user_login := claims["sub"].(string)
+		return user_login, nil
+	}
+
+	return "", ErrInvalidToken
 }
