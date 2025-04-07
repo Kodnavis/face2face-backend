@@ -6,3 +6,6 @@
 
 .vscode/
 .idea/
+
+data
+letsencrypt

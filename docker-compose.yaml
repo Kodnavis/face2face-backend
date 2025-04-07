@@ -1,0 +1,45 @@
+version: '1'
+services:
+  app:
+    image: 'jc21/nginx-proxy-manager:latest'
+    restart: unless-stopped
+    ports:
+      - '80:80'
+      - '81:81'
+      - '443:443'
+    volumes:
+      - ./data:/data
+      - ./letsencrypt:/etc/letsencrypt
+    depends_on:
+      - user-service
+  
+  postgres:
+    image: postgres:latest
+    restart: unless-stopped
+    container_name: postgres_container
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: face2face
+    ports:
+      - "5430:5432"
+
+  migrate:
+    image: golang:1.23-alpine
+    command: go run ./cmd/migrate/main.go
+    volumes:
+      - ./user-service:/user-service
+    working_dir: /user-service
+    depends_on:
+      - postgres
+
+  user-service:
+    image: golang:1.23-alpine
+    command: go run .//cmd//main.go
+    restart: unless-stopped
+    working_dir: /user-service
+    volumes:
+      - ./user-service:/user-service
+    depends_on:
+      - postgres
+      - migrate
