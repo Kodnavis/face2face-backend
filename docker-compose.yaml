@@ -24,22 +24,12 @@ services:
     ports:
       - "5430:5432"
 
-  migrate:
-    image: golang:1.23-alpine
-    command: go run ./cmd/migrate/main.go
-    volumes:
-      - ./user-service:/user-service
-    working_dir: /user-service
-    depends_on:
-      - postgres
-
   user-service:
     image: golang:1.23-alpine
-    command: go run .//cmd//main.go
+    command: sh -c "go run ./cmd/migrate/main.go && go run ./cmd/main.go"
     restart: unless-stopped
     working_dir: /user-service
     volumes:
       - ./user-service:/user-service
     depends_on:
       - postgres
-      - migrate
