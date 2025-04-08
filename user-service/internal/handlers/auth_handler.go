@@ -7,9 +7,10 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/Kodnavis/face2face-backend/common/auth"
+
 	"github.com/Kodnavis/face2face-backend/user-service/internal/data/requests"
 	"github.com/Kodnavis/face2face-backend/user-service/internal/repositories"
-	"github.com/Kodnavis/face2face-backend/user-service/internal/utils"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -49,22 +50,22 @@ func (u *User) Login(c *gin.Context) {
 		return
 	}
 
-	token, err := utils.GenerateToken(user.Login)
-	if err != nil {
-		log.Println(err)
-
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "failed to create token",
-		})
-		return
-	}
-
 	token_lifespan, err := strconv.Atoi(os.Getenv("TOKEN_LIFESPAN"))
 	if err != nil {
 		log.Panicln(err)
 
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": "internal server error",
+		})
+		return
+	}
+
+	token, err := auth.GenerateToken(user.Login, token_lifespan)
+	if err != nil {
+		log.Println(err)
+
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "failed to create token",
 		})
 		return
 	}

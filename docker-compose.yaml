@@ -31,5 +31,6 @@ services:
     working_dir: /user-service
     volumes:
       - ./user-service:/user-service
+      - ./common:/common
     depends_on:
       - postgres
