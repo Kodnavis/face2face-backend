@@ -50,7 +50,7 @@ func (u *User) Create(c *gin.Context) {
 		CreatedAt: user.CreatedAt.Format(time.RFC3339),
 	}
 
-	c.JSON(http.StatusOK, response)
+	c.JSON(http.StatusCreated, response)
 }
 
 func (u *User) List(c *gin.Context) {

@@ -4,6 +4,7 @@ import (
 	"os"
 
 	"github.com/Kodnavis/face2face-backend/common/auth"
+	"github.com/Kodnavis/face2face-backend/common/middleware"
 	"github.com/Kodnavis/face2face-backend/user-service/internal/handlers"
 	"github.com/Kodnavis/face2face-backend/user-service/internal/repositories"
 	"github.com/gin-gonic/gin"
@@ -11,6 +12,8 @@ import (
 
 func (a *App) loadRoutes() {
 	router := gin.Default()
+
+	router.Use(middleware.CorsMiddleware())
 
 	userGroup := router.Group("/users")
 	a.loadUserRoutes(userGroup)
