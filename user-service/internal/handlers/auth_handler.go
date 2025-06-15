@@ -71,7 +71,26 @@ func (u *User) Login(c *gin.Context) {
 	}
 
 	c.SetSameSite(http.SameSiteLaxMode)
-	c.SetCookie("Authorization", token, 3600*token_lifespan, "", "", false, true)
+	c.SetCookie(
+		"Authorization",
+		token,
+		3600*token_lifespan,
+		"/",
+		"",
+		false,
+		true,
+	)
 
-	c.Status(http.StatusOK)
+	type publicUser struct {
+		ID        uint   `json:"id"`
+		Login     string `json:"login"`
+		Firstname string `json:"firstname"`
+		Lastname  string `json:"lastname"`
+	}
+	c.JSON(http.StatusOK, publicUser{
+		ID:        user.ID,
+		Login:     user.Login,
+		Firstname: user.Firstname,
+		Lastname:  user.Lastname,
+	})
 }
